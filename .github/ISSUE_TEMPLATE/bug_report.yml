@@ -1,0 +1,87 @@
+name: Bug
+description: Algo no funciona como se espera
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gracias por el reporte. **No pegues secretos reales** (tokens, contraseñas, peticiones de clientes):
+        sustitúyelos por valores de ejemplo. Las vulnerabilidades se reportan en privado, ver SECURITY.md.
+
+  - type: input
+    id: version
+    attributes:
+      label: Versión de SecretVars
+      description: Aparece en la pestaña Output de la extensión al cargarla.
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: burp
+    attributes:
+      label: Burp Suite (edición y versión)
+      placeholder: "Professional 2026.10"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tool
+    attributes:
+      label: Herramienta afectada
+      multiple: true
+      options:
+        - Repeater
+        - Intruder
+        - Scanner
+        - Proxy
+        - Pestaña SecretVars (gestión)
+        - Menú contextual
+        - Pestaña SecretVars del editor
+        - Otra
+    validations:
+      required: true
+
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: Protocolo
+      options:
+        - HTTP/1.1
+        - HTTP/2
+        - No aplica
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Pasos para reproducirlo
+      description: Incluye la petición con los marcadores (sin valores reales).
+      placeholder: |
+        1. Crear el secreto `token` en ámbito Proyecto
+        2. En Repeater enviar:
+           GET / HTTP/1.1
+           Authorization: Bearer {{secret:token}}
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Resultado esperado y resultado obtenido
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Salida de la extensión
+      description: Extensions › Installed › SecretVars › Output / Errors. Los logs no contienen valores, pero revísalos igualmente.
+      render: text
+
+  - type: input
+    id: os
+    attributes:
+      label: Sistema operativo
+      placeholder: "Windows 11 / macOS 15 / Kali 2026.3"

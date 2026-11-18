@@ -1,0 +1,9 @@
+* text=auto eol=lf
+
+# Scripts del wrapper: saltos de línea correctos en cada plataforma
+gradlew      text eol=lf
+*.bat        text eol=crlf
+
+# Binarios
+*.jar        binary
+*.png        binary

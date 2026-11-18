@@ -1,0 +1,61 @@
+name: Release
+
+# Se ejecuta al subir un tag con formato vX.Y.Z (p. ej. git tag v1.1.0 && git push origin v1.1.0)
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publicar release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configurar Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Configurar Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Compilar y ejecutar pruebas
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
+          chmod +x ./gradlew
+          ./gradlew build --no-daemon -PreleaseVersion="${VERSION}"
+
+      - name: Extraer notas del CHANGELOG
+        run: |
+          awk -v ver="${VERSION}" '
+            $0 ~ "^## \\[" ver "\\]" { found = 1; next }
+            found && /^## \[/ { exit }
+            found && /^\[[^]]+\]: / { exit }
+            found { print }
+          ' CHANGELOG.md > release-notes.md
+          if [ ! -s release-notes.md ] || ! grep -q '[^[:space:]]' release-notes.md; then
+            echo "No hay sección [${VERSION}] en CHANGELOG.md; se generarán notas automáticas." >&2
+            : > release-notes.md
+          fi
+
+      - name: Crear release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          JAR="build/libs/SecretVars-${VERSION}.jar"
+          test -f "${JAR}"
+          if [ -s release-notes.md ]; then
+            gh release create "${GITHUB_REF_NAME}" "${JAR}" \
+              --title "SecretVars ${VERSION}" --notes-file release-notes.md --verify-tag
+          else
+            gh release create "${GITHUB_REF_NAME}" "${JAR}" \
+              --title "SecretVars ${VERSION}" --generate-notes --verify-tag
+          fi

@@ -1,0 +1,26 @@
+name: Propuesta
+description: Idea o mejora para SecretVars
+title: "[Propuesta] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema o caso de uso
+      description: ¿Qué intentas hacer durante una auditoría y qué te lo impide hoy?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Solución propuesta
+      description: Cómo te gustaría que funcionara (sintaxis, menú, ajuste...).
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: Otras extensiones, reglas de sesión de Burp, macros...

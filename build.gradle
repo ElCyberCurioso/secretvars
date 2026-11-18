@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+}
+
+group = 'secretvars'
+// La versión se puede fijar desde fuera (el workflow de release la toma del tag vX.Y.Z):
+//   ./gradlew build -PreleaseVersion=1.2.0
+version = providers.gradleProperty('releaseVersion').getOrElse('1.0.0')
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Burp aporta la API en tiempo de ejecución: no se empaqueta en el JAR.
+    compileOnly 'net.portswigger.burp.extensions:montoya-api:2026.7'
+    testImplementation 'net.portswigger.burp.extensions:montoya-api:2026.7'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 17 // compatible con cualquier Burp que incluya Java 17 o superior
+    options.compilerArgs += ['-Xlint:all', '-Xlint:-serial']
+}
+
+jar {
+    archiveFileName = "SecretVars-${project.version}.jar"
+    manifest {
+        attributes(
+                'Implementation-Title': 'SecretVars',
+                'Implementation-Version': project.version
+        )
+    }
+}
+
+// Las pruebas no usan JUnit: son programas autocontenidos que fallan con código de salida != 0.
+tasks.named('test') {
+    enabled = false
+}
+
+tasks.register('coreTests', JavaExec) {
+    group = 'verification'
+    description = 'Pruebas del motor de sustitución, la reescritura HTTP/1 y el almacén de secretos.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'secretvars.core.CoreTests'
+}
+
+tasks.register('handlerSimulation', JavaExec) {
+    group = 'verification'
+    description = 'Simulación del flujo Repeater -> HttpHandler con una API Montoya simulada.'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'secretvars.burp.HandlerSimulation'
+}
+
+tasks.named('check') {
+    dependsOn 'coreTests', 'handlerSimulation'
+}
